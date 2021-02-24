@@ -2,12 +2,13 @@
  * Name: Daniel Nguyen
  * ID: A16129027
  * Email: d7nguyen@ucsd.edu
- * Sources used: 
+ * Sources used: tutor help(Ashley Kou)
  * 
  * This file contains the program to store recent IDs from users who test
  * positive for COVID-19. It has methods to add and return IDs using ArrayLists.
  */
-
+ 
+import java.util.*;
 
 /**
  * This class represents the server that contains the recent IDs of users who tested
@@ -20,7 +21,7 @@ public class Server
     /**
      * This constructor initializes infectedIds with a new ArrayList.
      */
-    public Server();  
+    public Server()  
     {
         infectedIds = new ArrayList<Integer>();
     }
@@ -31,7 +32,7 @@ public class Server
      * @param ids
      * @returns false if ids is null. Otherwise return true.
      */
-    public boolean addInfectedIds(ArrayList<Integer> ids);
+    public boolean addInfectedIds(ArrayList<Integer> ids)
     {
         if (ids == null)
         {
@@ -55,10 +56,10 @@ public class Server
      *
      * @returns the new ArrayList copy.
      */
-    public ArrayList<Integer> getInfectedIds();
+    public ArrayList<Integer> getInfectedIds()
     {
         //create a deep copy
-        public ArrayList<Integer> deepCopyInfectIds = new ArrayList<Integer>();
+        ArrayList<Integer> deepCopyInfectIds = new ArrayList<Integer>();
         
         //iterate through the array
         for(int a=0; a<infectedIds.size(); a++)
