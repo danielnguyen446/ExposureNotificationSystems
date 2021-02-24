@@ -16,6 +16,7 @@ import java.util.*;
  */
 public class Server
 {
+    /**instance variables*/
     public ArrayList<Integer> infectedIds;
     
     /**
