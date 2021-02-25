@@ -2,10 +2,11 @@
  * Name: Daniel Nguyen
  * ID: A16129027
  * Email: d7nguyen@ucsd.edu
- * Sources used: tutor help(Ashley Kou)
+ * Sources used: tutor help(Ashley Kou, Claudia Handoyo, Peony Lum, Qingyang Hu)
  * 
  * This file contains the program to represent the functionality of 
  * a student's phone when using the exposure notification system.
+ * It will handle both ID exchanges and student-related functions.
  */
 
 import java.util.*;
@@ -24,6 +25,9 @@ public class Student
     public ArrayList<Integer> usedIds;  //all random ids the student used
     public ArrayList<ContactInfo> contactHistory;   //objects received
     
+    /**constant(to avoid magic number)*/
+    private static final int RISK_CONDITION = 3;
+    
     /**
      * This constructor initializes the instance variables before the student
      * is ready for simulation.
@@ -40,7 +44,7 @@ public class Student
         
         //initialize with empty ArrayList
         usedIds = new ArrayList<Integer>();
-        contactHistory = new ArrayList<>(ContactInfo);
+        contactHistory = new ArrayList<ContactInfo>();
     }
     
     /**
@@ -64,7 +68,7 @@ public class Student
     }
     
     /**
-     * This method sets id to a random integer and stores it in usedIds
+     * This method sets id to a random integer and stores it in usedIds.
      */
     public void updateId()
     {
@@ -76,14 +80,17 @@ public class Student
     }
     
     /**
-     * This method adds information to contactHistory
+     * This method adds information to contactHistory. It also indicates if 
+     * this is done successfully.
      * 
-     * @param info
+     * @param info the information exchanged when phones come into contact 
+     *      with each other.
      * @return false if info is invalid. Otherwise return true
      */
     public boolean addContactInfo(ContactInfo info)
     {
-        if(info!=null && info>=0)//if info is valid, add it to contactHistory
+        //if info is valid, add it to contactHistory
+        if(info.isValid() && info!=null)
         {
             contactHistory.add(info);
             return true;
@@ -98,7 +105,7 @@ public class Student
     /**
      * This method adds all IDs in the student object's usedIds into the server
      * 
-     * @param server
+     * @param server contains recent IDs of students who tested positive
      * @return true if added successfully
      */
     public boolean uploadAllUsedIds(Server server)
@@ -106,11 +113,7 @@ public class Student
         //if server is not null, usedIds go into infectedIds in server 
         if (server!=null)
         {
-            //iterate through and add all usedIds to infectedIds
-            for(int a=0; a<usedIds.size(); a++)
-            {
-                addInfectedIds(usedIds.get());
-            }
+            server.addInfectedIds(usedIds);
             return true;
         }
         else
@@ -124,7 +127,7 @@ public class Student
      * This method updates covidPositive and inQuarantine to true and uploads
      * usedIds to server
      * 
-     * @param server
+     * @param server contains recent IDs of students who tested positive
      * @return true if uploadAllUsedIds executed successfully
      */
     public boolean testPositive(Server server)
@@ -133,40 +136,112 @@ public class Student
         inQuarantine = true;
         
         //upload usedIds to server
-        uploadAllUsedIds();
+        return uploadAllUsedIds(server);
     }
     
     /**
-     * This method will call getInfectedIds() and check contactHistory.
+     * This method will call getInfectedIds() and check contactHistory. 
+     * It makes a list by finding contacts that satisfy a few requirements.
      * 
-     * @param server
-     * @param fromTime
+     * @param server contains recent IDs of students who tested positive
+     * @param fromTime the starting time that students should check risk from   
      * 
      * @return a list of contacts from contactHistory that have not been used,
-     * its ID is in infectedIds, and its time is greater than or 
-     * equal to fromTime
+     *      its ID is in infectedIds, and its time is greater than or 
+     *      equal to fromTime
      * @return null if server is null, fromTime is negative, or getInfectedIds 
-     * returns null
+     *      returns null
      */
     public ArrayList<ContactInfo> getRecentPositiveContacts(Server server,
     int fromTime)
     {
+        //null checking
+        if (server == null)
+        {
+            return null;
+        }
         
+        //create new sublist
+        ArrayList<ContactInfo> contactList = new ArrayList<ContactInfo>(); 
+        
+        //a list of Ids made by calling getInfectedIds
+        ArrayList<Integer> infectedIds = server.getInfectedIds();
+        
+        for(ContactInfo element: contactHistory)
+        {
+            //add each contact only if it satisfies the requirements
+            if(element.used!=true && infectedIds.contains(element.id) && element.time>=fromTime)
+            {
+                contactList.add(element);
+            }
+        }
+        //return the list of contacts
+        return contactList;
     }
+    
+    /**
+     * This method will assess the student's risk of being infected and allow
+     * them to quarantine if they choose. Risk determined by at contact who 
+     * tested positive or 
+     * 
+     * @param server contains recent IDs of students who tested positive
+     * @param fromTime the starting time that students should check risk from   
+     * @param quarantineChoice will be true if the student wants to quarantine.
+     *      Otherwise will be false.
+     * @return 1 if the student is high risk. Otherwise return 0.
+     */
     public int riskCheck(Server server, int fromTime, boolean quarantineChoice)
     {
         //call getRecentPositiveContacts. If it returns null, return -1
+        if(getRecentPositiveContacts(server, fromTime) == null)
+        {
+            return -1;
+        }
+        
+        int riskLevel = 0;
+        
         //If student has at least 1 recent contact who tested positive 
-            //if this contact had distance less than or equal to 1, mark as used
+        if(getRecentPositiveContacts(server, fromTime).size()>=1)
+        {
+            for(ContactInfo element: contactHistory)
+            {
+                /**
+                 * If this contact had distance less than or equal to 1,
+                 * set to high risk and mark as used
+                 */
+                if(element.distance<=1)
+                {
+                    riskLevel = 1;
+                    element.used = true;
+                }
+            }
+        }
         
         //if at least 3 contacts tested positive
+        if(getRecentPositiveContacts(server, fromTime).size()>=RISK_CONDITION)
+        {
             //all ContactInfo should be marked as used
+            for(ContactInfo element: contactHistory)
+            {
+                riskLevel = 1;
+                element.used = true;
+            }
+        }
         
-        //if high risk, 
+        //if high risk,
+        if(riskLevel == 1)
+        {            
             //if quarantineChoice is true
-                //inQuarantine = true;
-            //return 1;
-        //else
-            //return 0;
+            if(quarantineChoice == true)
+            {
+                //the student will now be in quarantine
+                inQuarantine = true;
+            }        
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
     }
 }
