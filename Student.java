@@ -73,7 +73,7 @@ public class Student
     public void updateId()
     {
         Random rand = new Random();
-        id = rand.nextInt(Integer.MAX_VALUE+1); //set id to random integer
+        id = rand.nextInt(Integer.MAX_VALUE); //set id to random integer
         
         //store it in usedIds
         usedIds.add(id);
