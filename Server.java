@@ -11,8 +11,8 @@
 import java.util.*;
 
 /**
- * This class represents the server that contains the recent IDs of users who tested
- * positive. It can add new IDs and get all stored IDs.
+ * This class represents the server that contains the recent IDs of users who 
+ * tested positive. It can add new IDs and get all stored IDs.
  */
 public class Server
 {
@@ -30,8 +30,9 @@ public class Server
     /**
      * This method puts all ids into the infectedIds array.
      * 
-     * @param ids
-     * @returns false if ids is null. Otherwise return true.
+     * @param ids the random number assigned to a student's phone
+     * @returns false if ids is null. Otherwise return true after successfully
+     * adding the ids.
      */
     public boolean addInfectedIds(ArrayList<Integer> ids)
     {
